@@ -1,14 +1,38 @@
-var fs = require('fs');
-var trips = JSON.parse(fs.readFileSync('./data/trips.json', 'utf8'));
+const tripsEndpoint = "http://localhost:3000/api/trips";
+const options = {
+    method: "GET",
+    headers: {
+        Accept: 'application/json',
+    }
+}
+
+// var fs = require('fs');
+// var trips = JSON.parse(fs.readFileSync('./data/trips.json', 'utf8'));
 
 
 /* GET travel view */
 const { title } = require("process")
 
-const travel = (req, res) => {
-    res.render('travel', { title: 'Travlr Gateways', trips });
-    console.log(res);
+const travel = async function (req, res, next) {
+
+    await fetch(tripsEndpoint, options)
+    .then((res) => res.json())
+    .then((json) => {
+        let message = null;
+        if (!(json instanceof Array)) {
+        let message = "API lookup error";
+        json = []
+        } else {
+            if (!json.length) {
+                message = "No trips found";
+            }
+        }
+        res.render('travel', { title: 'Travlr Getaways', trips: json, message})
+    })
+    .catch((err) => res.staus(500).send(err.message))
 };
+
+
 
 module.exports = {
     travel
